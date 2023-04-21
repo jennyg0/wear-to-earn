@@ -6,6 +6,7 @@ bin/
 
 server.ts
 rough.ts
+environment.ts
 functions/
 firebase.json
 .firebaserc

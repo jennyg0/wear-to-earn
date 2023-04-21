@@ -1,5 +1,6 @@
 import { getUserData } from '@decentraland/Identity'
 import { addMinute } from './serverSupabase'
+import { getPlayersInScene } from '@decentraland/Players'
 
 const stand = new Entity()
 stand.addComponent(new BoxShape())
@@ -38,13 +39,18 @@ const shirtWearingTime: Record<string, number> = {}
 
 const targetShirt = 'urn:decentraland:off-chain:base-avatars:f_simple_yellow_tshirt'
 
-async function isWearingTargetShirt(): Promise<boolean> {
-  const data = await getUserData()
-  const wearingTargetShirt = data.avatar.wearables.some((wearable: string) => {
+async function getAllUsersData(): Promise<any[]> {
+  const players = await getPlayersInScene()
+  return Promise.all(players.map(() => getUserData()))
+}
+
+async function isWearingTargetShirt(userData): Promise<boolean> {
+  const wearingTargetShirt = userData.avatar.wearables.some((wearable: string) => {
     return wearable === targetShirt
   })
   return wearingTargetShirt
 }
+
 class TimerSystem implements ISystem {
   timer: number
   callback: () => Promise<void>
@@ -65,32 +71,36 @@ class TimerSystem implements ISystem {
   }
 }
 
-async function checkMyAvatarWearingShirt() {
-  const userData = await getUserData()
-  const publicKey = userData.publicKey
+async function checkAllUsersWearingTargetShirt() {
+  const allUsersData = await getAllUsersData()
+  log(allUsersData, 'data')
 
-  const wearingTargetShirt = await isWearingTargetShirt()
-  log(wearingTargetShirt, 'check shirt')
-  if (wearingTargetShirt) {
-    const currentTime = shirtWearingTime[publicKey] || 0
-    shirtWearingTime[publicKey] = currentTime + 1
-    await addMinute(userData.publicKey, targetShirt)
-      .then(() => {
-        log('Minute added successfully')
-      })
-      .catch((error) => {
-        log('Error calling addMin:', error, error.message)
-      })
+  for (const userData of allUsersData) {
+    const publicKey = userData.publicKey
+
+    const wearingTargetShirt = await isWearingTargetShirt(userData)
+    log(wearingTargetShirt, 'check shirt')
+    if (wearingTargetShirt) {
+      const currentTime = shirtWearingTime[publicKey] || 0
+      shirtWearingTime[publicKey] = currentTime + 1
+      await addMinute(userData.publicKey, targetShirt)
+        .then(() => {
+          log('Minute added successfully FE')
+        })
+        .catch((error) => {
+          log('Error calling addMin FE:', error, error.message)
+        })
+    }
+
+    if (!wearingTargetShirt) {
+      shirtWearingTime[publicKey] = 0
+    }
   }
 
-  if (!wearingTargetShirt) {
-    shirtWearingTime[publicKey] = 0
-  }
-
-  engine.addSystem(new TimerSystem(checkMyAvatarWearingShirt, 60000))
+  engine.addSystem(new TimerSystem(checkAllUsersWearingTargetShirt, 60000))
 }
 
-void checkMyAvatarWearingShirt()
+void checkAllUsersWearingTargetShirt()
 
 function addShirtWearingTimeToStand(publicKey: string) {
   const text = new Entity()
