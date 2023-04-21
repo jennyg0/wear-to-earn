@@ -2,3 +2,13 @@ package-lock.json
 *.js
 node_modules
 bin/
+.env
+
+server.ts
+rough.ts
+functions/
+firebase.json
+.firebaserc
+.vscode/
+.eslintrc.json
+config.ts

@@ -14,7 +14,7 @@
     "moduleResolution": "node",
     "ignoreDeprecations": "5.0"
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "config.ts", "src/environment.ts"],
   "extends": "./node_modules/decentraland-ecs/types/tsconfig.json",
   "compileOnSave": false
 }

@@ -2,5 +2,9 @@
   "extends": "@dcl/eslint-config/sdk",
   "parserOptions": {
     "project": ["tsconfig.json"]
+  },
+  "rules": {
+    "@typescript-eslint/no-var-requires": "off", // Allow require statements
+    "quotes": ["error", "single"] // Use single quotes instead of double quotes
   }
 }
