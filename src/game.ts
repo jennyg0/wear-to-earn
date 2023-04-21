@@ -1,39 +1,7 @@
 import { getUserData } from '@decentraland/Identity'
-import { addMinute } from './serverSupabase'
+import { addMinute, getScoreBoard } from './serverSupabase'
 import { getPlayersInScene } from '@decentraland/Players'
-
-const stand = new Entity()
-stand.addComponent(new BoxShape())
-stand.addComponent(new Transform({ position: new Vector3(8, 0, 8) }))
-engine.addEntity(stand)
-
-const avatar = new Entity()
-const avatarShape = new AvatarShape()
-
-avatar.addComponent(avatarShape)
-avatar.addComponent(new Transform({ position: new Vector3(8, 0.5, 8) }))
-engine.addEntity(avatar)
-avatarShape.bodyShape = 'urn:decentraland:off-chain:base-avatars:BaseFemale'
-avatarShape.skinColor = new Color4(0.94921875, 0.76171875, 0.6484375, 1)
-avatarShape.eyeColor = new Color4(0.23046875, 0.625, 0.3125, 1)
-avatarShape.hairColor = new Color4(0.234375, 0.12890625, 0.04296875, 1)
-avatarShape.wearables = [
-  'urn:decentraland:off-chain:base-avatars:polocoloredtshirt',
-  'urn:decentraland:off-chain:base-avatars:f_red_modern_pants',
-  'urn:decentraland:off-chain:base-avatars:bun_shoes',
-  'urn:decentraland:off-chain:base-avatars:standard_hair',
-  'urn:decentraland:off-chain:base-avatars:f_eyes_00',
-  'urn:decentraland:off-chain:base-avatars:f_eyebrows_00',
-  'urn:decentraland:off-chain:base-avatars:f_mouth_00'
-]
-
-void getUserData().then(async (a) => {
-  log(a, 'avatar')
-  const av = a.avatar
-  avatarShape.bodyShape = av.bodyShape
-  avatarShape.wearables = av.wearables
-  engine.addEntity(avatar)
-})
+import { buildLeaderBoard } from './leaderboard'
 
 const shirtWearingTime: Record<string, number> = {}
 
@@ -102,42 +70,38 @@ async function checkAllUsersWearingTargetShirt() {
 
 void checkAllUsersWearingTargetShirt()
 
-function addShirtWearingTimeToStand(publicKey: string) {
-  const text = new Entity()
-  text.addComponent(new TextShape('Wearing shirt for: 0 minutes'))
-  text.addComponent(new Transform({ position: new Vector3(0, 2, 0) }))
-  text.setParent(stand)
-  engine.addEntity(text)
+const smallStoneWall = new Entity('smallStoneWall')
+engine.addEntity(smallStoneWall)
+smallStoneWall.addComponent(
+  new Transform({
+    position: new Vector3(1, 0, 9.5),
+    rotation: new Quaternion(0, 0, 0, 1),
+    scale: new Vector3(1.8453333377838135, 1.8453333377838135, 6)
+  })
+)
 
-  class UpdateTextSystem implements ISystem {
-    timer: number
-    callback: () => void
+smallStoneWall.addComponent(new GLTFShape('models/FenceStoneTallSmall_01.glb'))
+smallStoneWall.addComponent(
+  new OnPointerDown(() => {
+    updateBoard().catch((error) => log(error))
+  })
+)
 
-    constructor(callback: () => void, timeout: number) {
-      this.callback = callback
-      this.timer = timeout
-    }
+const boardParent = new Entity()
+boardParent.addComponent(
+  new Transform(
+    new Transform({
+      position: new Vector3(1.3, 2.2, 6.5),
+      rotation: Quaternion.Euler(0, 270, 0)
+    })
+  )
+)
 
-    update(dt: number) {
-      this.timer -= dt * 1000
+engine.addEntity(boardParent)
 
-      if (this.timer <= 0) {
-        this.timer = 0
-        this.callback()
-        engine.removeSystem(this)
-        engine.addSystem(new UpdateTextSystem(updateText, 60000))
-      }
-    }
-  }
-
-  const updateText = () => {
-    const time = shirtWearingTime[publicKey] || 0
-    text.getComponent(TextShape).value = `Wearing shirt for: ${time} minutes`
-  }
-
-  engine.addSystem(new UpdateTextSystem(updateText, 60000))
+async function updateBoard() {
+  const scoreData: any = await getScoreBoard()
+  buildLeaderBoard(scoreData, boardParent, 9).catch((error) => log(error))
 }
 
-void getUserData().then(async (userData) => {
-  addShirtWearingTimeToStand(userData.publicKey)
-})
+updateBoard().catch((error) => log(error))
