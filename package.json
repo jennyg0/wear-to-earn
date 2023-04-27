@@ -20,16 +20,10 @@
   "dependencies": {
     "@dcl/ecs-scene-utils": "^1.7.5",
     "@dcl/ui-scene-utils": "^1.8.4",
-    "@supabase/supabase-js": "^2.21.0",
     "cors": "^2.8.5",
     "decentraland-ecs": "^6.11.14",
     "decentraland-ecs-utils": "^1.5.2",
     "dotenv": "^16.0.3",
-    "express": "^4.18.2",
-    "firebase-admin": "^11.7.0",
-    "firebase-functions": "^4.3.0",
-    "redux-persistence-engine-localstorage": "^1.0.0",
-    "socket.io-client": "^4.6.1",
     "uuid": "^9.0.0"
   },
   "engines": {

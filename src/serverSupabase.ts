@@ -16,7 +16,6 @@ export let userData: UserData
 
 async function setUserData() {
   const data = await getUserData()
-  log(data.displayName)
   userData = data
 }
 
