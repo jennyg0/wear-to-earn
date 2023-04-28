@@ -19,7 +19,7 @@ async function setUserData() {
   userData = data
 }
 
-export async function addMinute(address, item) {
+export async function addMinute(address, item, name) {
   if (!userData) {
     await setUserData()
   }
@@ -35,8 +35,9 @@ export async function addMinute(address, item) {
       },
       body: JSON.stringify({
         uuid: generateUUID(),
-        address: address,
-        item: item
+        address,
+        item,
+        name
       })
     })
 

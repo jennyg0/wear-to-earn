@@ -5,7 +5,7 @@ import { buildLeaderBoard } from './leaderboard'
 
 const shirtWearingTime: Record<string, number> = {}
 
-const targetShirt = 'urn:decentraland:off-chain:base-avatars:f_simple_yellow_tshirt'
+const targetShirt = 'urn:decentraland:off-chain:base-avatars:polocoloredtshirt'
 
 async function getAllUsersData(): Promise<any[]> {
   const players = await getPlayersInScene()
@@ -41,7 +41,7 @@ class TimerSystem implements ISystem {
 
 async function checkAllUsersWearingTargetShirt() {
   const allUsersData = await getAllUsersData()
-  log(allUsersData, 'data')
+  log(allUsersData, 'all user data')
 
   for (const userData of allUsersData) {
     const publicKey = userData.publicKey
@@ -51,7 +51,7 @@ async function checkAllUsersWearingTargetShirt() {
     if (wearingTargetShirt) {
       const currentTime = shirtWearingTime[publicKey] || 0
       shirtWearingTime[publicKey] = currentTime + 1
-      await addMinute(userData.publicKey, targetShirt)
+      await addMinute(userData.publicKey, targetShirt, userData.displayName)
         .then(() => {
           log('Minute added successfully FE')
         })
@@ -101,7 +101,7 @@ engine.addEntity(boardParent)
 
 async function updateBoard() {
   const scoreData: any = await getScoreBoard()
-  buildLeaderBoard(scoreData, boardParent, 9).catch((error) => log(error))
+  buildLeaderBoard(scoreData, boardParent, 9).catch((error) => log(error, 'error board update'))
 }
 
 updateBoard().catch((error) => log(error))

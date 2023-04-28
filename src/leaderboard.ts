@@ -86,18 +86,8 @@ export class ScoreBoardText extends Entity {
 const scoreBoardNames: ScoreBoardText[] = []
 const scoreBoardValues: ScoreBoardText[] = []
 
-function truncateString(str: string) {
-  let shortStr = str
-  const maxLength = 8
-  if (str.length > maxLength) {
-    const start = str.slice(0, maxLength / 2)
-    const end = str.slice(-maxLength / 2)
-    shortStr = `${start}...${end}`
-  }
-  return shortStr
-}
-
 export async function buildLeaderBoard(scoreData: any[], parent: Entity, length: number) {
+  const sortedScoreData = scoreData.sort((a, b) => b.minutes_worn - a.minutes_worn)
   // if canvas is empty
   if (scoreBoardNames.length === 0) {
     const nameTitle = new ScoreBoardText(
@@ -119,13 +109,10 @@ export async function buildLeaderBoard(scoreData: any[], parent: Entity, length:
     )
 
     for (let i = 0; i < length; i++) {
-      if (i < scoreData.length) {
-        const address = scoreData[i].user_address
-        const shortAddress = truncateString(address)
-
+      if (i < sortedScoreData.length) {
         const name = new ScoreBoardText(
           TextTypes.TINYTITLE,
-          shortAddress,
+          sortedScoreData[i].user_name,
           {
             position: new Vector3(-0.6, 0.2 - i / 4, 0)
           },
@@ -135,7 +122,7 @@ export async function buildLeaderBoard(scoreData: any[], parent: Entity, length:
 
         const score = new ScoreBoardText(
           TextTypes.TINYVALUE,
-          scoreData[i].minutes_worn.toString(),
+          sortedScoreData[i].minutes_worn.toString(),
           {
             position: new Vector3(0.6, 0.2 - i / 4, 0)
           },
@@ -168,11 +155,9 @@ export async function buildLeaderBoard(scoreData: any[], parent: Entity, length:
   } else {
     // update existing board
     for (let i = 0; i < length; i++) {
-      if (i > scoreData.length) {
-        const address = scoreData[i].user_address
-        const shortAddress = truncateString(address)
-        scoreBoardNames[i].getComponent(TextShape).value = shortAddress
-        scoreBoardValues[i].getComponent(TextShape).value = scoreData[i].minutes_worn
+      if (i < sortedScoreData.length) {
+        scoreBoardNames[i].getComponent(TextShape).value = sortedScoreData[i].user_name
+        scoreBoardValues[i].getComponent(TextShape).value = sortedScoreData[i].minutes_worn
       }
     }
   }
